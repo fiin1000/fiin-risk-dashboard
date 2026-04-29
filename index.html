@@ -373,12 +373,25 @@ function countMonth(m) {
 
 document.addEventListener('DOMContentLoaded', function() {
   if (DASHBOARD_CSV_URL) {
-    // FIX: Cache-busting — append timestamp so browser always fetches fresh data
-    var bustUrl = DASHBOARD_CSV_URL + (DASHBOARD_CSV_URL.indexOf('?') > -1 ? '&' : '?') + '_cb=' + Date.now();
-    fetch(bustUrl)
-      .then(function(r) { return r.text(); })
-      .then(function(t) { buildData(parseCSV(t), true); render(true); })
-      .catch(function() { buildData(BUILTIN, false); render(false); });
+    fetch(DASHBOARD_CSV_URL)
+      .then(function(r) {
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.text();
+      })
+      .then(function(t) {
+        var rows = parseCSV(t);
+        if (rows.length === 0) throw new Error('Empty sheet');
+        buildData(rows, true);
+        render(true);
+      })
+      .catch(function(err) {
+        console.warn('Sheet fetch failed: ' + err + ' — falling back to built-in data');
+        buildData(BUILTIN, false);
+        render(false);
+        // Show a small warning so you know it fell back
+        var badge = document.getElementById('updated-badge');
+        if (badge) badge.textContent = 'Sheet unavailable — showing built-in data';
+      });
   } else {
     buildData(BUILTIN, false);
     render(false);
