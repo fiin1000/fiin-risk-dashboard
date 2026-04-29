@@ -169,8 +169,8 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--paper);color:va
 
 <script>
 // ── PASTE YOUR GOOGLE SHEET CSV URL HERE ──────────────────────────────────────
-var DASHBOARD_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQSyDVlCbvfj5sSCzOLNBgId09qogYcyufakdjj0sMOzZDZGipNLLx5LhiWNsxI2rWQs8NwZbvnGUz4/pub?gid=933213545&single=true&output=csv';
-
+var SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQSyDVlCbvfj5sSCzOLNBgId09qogYcyufakdjj0sMOzZDZGipNLLx5LhiWNsxI2rWQs8NwZbvnGUz4/pub?gid=933213545&single=true&output=csv';
+var DASHBOARD_CSV_URL = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(SHEET_URL);
 var CATS = [
   {key:'Produce',icon:'🌿',label:'Produce'},
   {key:'Herbs & Spices',icon:'🌶️',label:'Herbs & Spices'},
