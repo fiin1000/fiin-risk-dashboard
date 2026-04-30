@@ -462,7 +462,7 @@ function renderMonthBar(live) {
   var monthSet = {};
   allRows.forEach(function(r){ if (r.month && r.month !== 'builtin') monthSet[r.month] = true; });
   var months = Object.keys(monthSet).sort().reverse();
-  if (months.length < 2) { document.getElementById('month-bar').style.display = 'none'; return; }
+  if (months.length < 99) { document.getElementById('month-bar').style.display = 'none'; return; }
   document.getElementById('month-bar').style.display = 'flex';
  var btns = document.getElementById('month-btns');
   btns.innerHTML = '<button class="month-btn' + (selectedMonth === 'all' ? ' active' : '') + '" data-month="all">All recent</button>' +
