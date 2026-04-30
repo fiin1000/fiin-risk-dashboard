@@ -377,7 +377,33 @@ function countMonth(m) {
 
 document.addEventListener('DOMContentLoaded', function() {
   if (DASHBOARD_CSV_URL) {
-    fetch(DASHBOARD_CSV_URL)
+    var controller = new AbortController();
+    var timeout = setTimeout(function() { controller.abort(); }, 8000);
+    fetch(DASHBOARD_CSV_URL, { signal: controller.signal })
+      .then(function(r) {
+        clearTimeout(timeout);
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.text();
+      })
+      .then(function(t) {
+        var rows = parseCSV(t);
+        if (rows.length === 0) throw new Error('Empty sheet');
+        buildData(rows, true);
+        render(true);
+      })
+      .catch(function(err) {
+        console.warn('Sheet fetch failed: ' + err);
+        buildData(BUILTIN, false);
+        render(false);
+        var badge = document.getElementById('updated-badge');
+        if (badge) badge.textContent = 'Sheet unavailable — showing built-in data';
+      });
+  } else {
+    buildData(BUILTIN, false);
+    render(false);
+    document.getElementById('setup-notice').style.display = 'block';
+  }
+});
       .then(function(r) {
         if (!r.ok) throw new Error('HTTP ' + r.status);
         return r.text();
