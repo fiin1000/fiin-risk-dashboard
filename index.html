@@ -415,7 +415,7 @@ function renderPage(live) {
   Object.keys(dashData).forEach(function(c){
     Object.keys(dashData[c]).forEach(function(s){ count += dashData[c][s].length; });
   });
-  var monthLabel = selectedMonth === 'builtin' ? 'April 2026' : formatMonth(selectedMonth);
+   var monthLabel = selectedMonth === 'builtin' ? 'April 2026' : (selectedMonth === 'all' ? 'Last 3 months' : formatMonth(selectedMonth));
   document.getElementById('updated-badge').textContent = (live ? 'Live · ' : 'Built-in · ') + monthLabel;
   document.getElementById('page-sub').textContent = 'Supply chain & food integrity intelligence · ' + count + ' items · ' + monthLabel + ' · ' +
     (live ? 'Updated daily via Google News RSS' : 'Built-in intelligence · connect Google Sheet for daily live updates');
@@ -430,8 +430,9 @@ function renderMonthBar(live) {
   var months = Object.keys(monthSet).sort().reverse();
   if (months.length < 2) { document.getElementById('month-bar').style.display = 'none'; return; }
   document.getElementById('month-bar').style.display = 'flex';
-  var btns = document.getElementById('month-btns');
-  btns.innerHTML = months.map(function(m) {
+ var btns = document.getElementById('month-btns');
+  btns.innerHTML = '<button class="month-btn' + (selectedMonth === 'all' ? ' active' : '') + '" data-month="all">All recent</button>' +
+  months.map(function(m) {
     var n = countMonth(m);
     return '<button class="month-btn' + (m === selectedMonth ? ' active' : '') + '" data-month="' + m + '">' +
       formatMonth(m) + '<span class="month-count">' + n + '</span></button>';
