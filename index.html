@@ -378,13 +378,14 @@ document.addEventListener('DOMContentLoaded', function() {
   if (DASHBOARD_CSV_URL) {
     var controller = new AbortController();
     var timeout = setTimeout(function() { controller.abort(); }, 8000);
-    fetch(DASHBOARD_CSV_URL, { signal: controller.signal })
+  fetch(DASHBOARD_CSV_URL, { signal: controller.signal })
       .then(function(r) {
         clearTimeout(timeout);
         if (!r.ok) throw new Error('HTTP ' + r.status);
-        return r.text();
+        return r.json();
       })
-      .then(function(t) {
+      .then(function(j) {
+        var t = j.data;
         var rows = parseCSV(t);
         if (rows.length === 0) throw new Error('Empty sheet');
         buildData(rows, true);
