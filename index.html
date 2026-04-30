@@ -374,36 +374,44 @@ function countMonth(m) {
 
 // ── INIT ─────────────────────────────────────────────────────────────────────
 
-document.addEventListener('DOMContentLoaded', function() {
-  if (DASHBOARD_CSV_URL) {
-    var controller = new AbortController();
-    var timeout = setTimeout(function() { controller.abort(); }, 8000);
-  fetch(DASHBOARD_CSV_URL, { signal: controller.signal })
-      .then(function(r) {
-        clearTimeout(timeout);
-        if (!r.ok) throw new Error('HTTP ' + r.status);
-        return r.json();
-      })
-      .then(function(j) {
-        var t = j.data;
-        var rows = parseCSV(t);
-        if (rows.length === 0) throw new Error('Empty sheet');
-        buildData(rows, true);
-        render(true);
-      })
-      .catch(function(err) {
-        console.warn('Sheet fetch failed: ' + err);
-        buildData(BUILTIN, false);
-        render(false);
-        var badge = document.getElementById('updated-badge');
-        if (badge) badge.textContent = 'Sheet unavailable — showing built-in data';
+function backfillHistory() {
+  var ss    = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName(DASHBOARD_SHEET);
+  if (!sheet) { Logger.log('No risk_dashboard sheet found'); return; }
+
+  var backfillDates = ['2026-02-28', '2026-03-31'];
+
+  backfillDates.forEach(function(date) {
+    Logger.log('Backfilling for ' + date);
+    
+    // Only dedupe within this backfill run, not against existing rows
+    var seenThisRun = {};
+    var newRows = [];
+
+    DASHBOARD_QUERIES.forEach(function(q) {
+      var cat = q[0], subcat = q[1], query = q[2];
+      var items = fetchDashboardRSS(cat, subcat, query);
+      items.forEach(function(item) {
+        var key = normKey(cat, item.headline);
+        if (!seenThisRun[key]) {
+          newRows.push([cat, subcat, item.headline, item.detail, item.source,
+                        item.link, item.risk_type, date, 'FALSE']);
+          seenThisRun[key] = true;
+        }
       });
-  } else {
-    buildData(BUILTIN, false);
-    render(false);
-    document.getElementById('setup-notice').style.display = 'block';
-  }
-});
+      Utilities.sleep(400);
+    });
+
+    if (newRows.length > 0) {
+      sheet.getRange(sheet.getLastRow() + 1, 1, newRows.length, 9).setValues(newRows);
+      Logger.log('Backfilled ' + newRows.length + ' rows for ' + date);
+    }
+  });
+
+  try {
+    SpreadsheetApp.getUi().alert('Backfill complete!');
+  } catch(e) {}
+}
       .then(function(r) {
         if (!r.ok) throw new Error('HTTP ' + r.status);
         return r.text();
