@@ -345,10 +345,14 @@ function buildData(rows, live) {
   applyMonthFilter();
 }
 
-function applyMonthFilter() {
+ffunction applyMonthFilter() {
   dashData = {};
+  // Build set of the 3 most recent months in the data
+  var monthSet = {};
+  allRows.forEach(function(r){ if (r.month && r.month !== 'builtin') monthSet[r.month] = true; });
+  var months = Object.keys(monthSet).sort().reverse().slice(0, 3);
   allRows.forEach(function(r) {
-    var match = (r.month === 'builtin') || (selectedMonth === 'builtin') || (r.month === selectedMonth);
+    var match = (r.month === 'builtin') || (selectedMonth === 'builtin') || (months.indexOf(r.month) > -1 && (selectedMonth === 'all' || r.month === selectedMonth));
     if (!match) return;
     if (!dashData[r.cat]) dashData[r.cat] = {};
     if (!dashData[r.cat][r.sub]) dashData[r.cat][r.sub] = [];
